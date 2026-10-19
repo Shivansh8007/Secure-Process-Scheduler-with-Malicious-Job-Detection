@@ -1,0 +1,764 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobSentinel | Job Management</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">JS</div>
+            <div>
+                <h2>JobSentinel</h2>
+                <span>Job Management System</span>
+            </div>
+        </div>
+
+        <div class="sidebar-label">MAIN MENU</div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-link active" data-page="dashboard">
+                <span class="nav-icon">▦</span>
+                Dashboard
+            </a>
+
+            <a href="#" class="nav-link" data-page="queue">
+                <span class="nav-icon">☷</span>
+                Job Queue
+
+            </a>
+
+            <a href="#" class="nav-link" data-page="workers">
+                <span class="nav-icon">⚙</span>
+                Workers
+            </a>
+
+            <a href="#" class="nav-link" data-page="history">
+                <span class="nav-icon">◷</span>
+                Execution History
+            </a>
+
+            <a href="#" class="nav-link" data-page="security">
+                <span class="nav-icon">♢</span>
+                Security Center
+            </a>
+
+            <a href="#" class="nav-link" data-page="comparison">
+                <span class="nav-icon">📊</span>
+                Algorithm Comparison
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="system-status-dot"></div>
+            <span>System Dashboard</span>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div>
+                <span class="topbar-label">JOB MANAGEMENT</span>
+                <h2>System Overview</h2>
+            </div>
+
+            <div class="topbar-right">
+                <span class="system-indicator">
+                    <span class="system-status-dot"></span>
+                    Backend Connected
+                </span>
+
+                <button id="refreshBtn" class="icon-btn" title="Refresh dashboard">
+                    ↻
+                </button>
+            </div>
+        </header>
+
+
+        <!-- DASHBOARD PAGE -->
+        <section id="dashboardPage" class="page-section active">
+
+            <div class="page-heading">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Monitor your job scheduling system.</p>
+                </div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span>Total Jobs</span>
+                        <span class="stat-icon blue">▦</span>
+                    </div>
+                    <h2 id="totalJobs">0</h2>
+                    <span class="stat-description">All submitted jobs</span>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span>Running Jobs</span>
+                        <span class="stat-icon orange">▶</span>
+                    </div>
+                    <h2 id="runningJobs">0</h2>
+                    <span class="stat-description">Currently executing</span>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span>Completed Jobs</span>
+                        <span class="stat-icon green">✓</span>
+                    </div>
+                    <h2 id="completedJobs">0</h2>
+                    <span class="stat-description">Successfully completed</span>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <span>Quarantined Jobs</span>
+                        <span class="stat-icon red">!</span>
+                    </div>
+                    <h2 id="quarantinedJobs">0</h2>
+                    <span class="stat-description">Isolated jobs</span>
+                </div>
+
+            </div>
+
+
+            <!-- DASHBOARD LOWER GRID -->
+            <div class="dashboard-grid">
+
+                <!-- WORKER OVERVIEW -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Worker Overview</h3>
+                            <p>Worker activity and availability</p>
+                        </div>
+                        <button class="text-btn" data-goto="workers">
+                            View Workers →
+                        </button>
+                    </div>
+
+                    <div class="worker-summary">
+                        <div class="worker-stat">
+                            <span>Active Workers</span>
+                            <h2 id="activeWorkers">0</h2>
+                        </div>
+
+                        <div class="worker-stat">
+                            <span>Idle Workers</span>
+                            <h2 id="idleWorkers">0</h2>
+                        </div>
+                    </div>
+
+                    <div id="workerList" class="worker-list">
+                        <p class="empty-message">Worker data not available yet.</p>
+                    </div>
+                </div>
+
+
+                <!-- QUEUE OVERVIEW -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Queue Overview</h3>
+                            <p>Jobs waiting for execution</p>
+                        </div>
+                        <button class="text-btn" data-goto="queue">
+                            View Queue →
+                        </button>
+                    </div>
+
+                    <div class="queue-overview">
+                        <div class="queue-number" id="queueNumber">0</div>
+                        <span>Pending jobs</span>
+                    </div>
+
+                    <div class="queue-progress">
+                        <div class="queue-progress-bar" id="queueProgress"></div>
+                    </div>
+
+                    <p class="queue-note">
+                        Jobs are processed according to the selected scheduling algorithm.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- RECENT JOBS -->
+            <div class="panel recent-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Recent Jobs</h3>
+                        <p>Latest jobs in the system</p>
+                    </div>
+
+                    <button class="text-btn" data-goto="queue">
+                        View All →
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Status</th>
+                                <th>Worker</th>
+                                <th>Burst Time</th>
+                                <th>Arrival Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTable">
+                            <tr>
+                                <td colspan="5">Loading jobs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- JOB QUEUE PAGE -->
+        <section id="queuePage" class="page-section">
+
+            <div class="page-header">
+                <div>
+                    <h1>Job Queue</h1>
+                    <p>Manage and monitor submitted jobs.</p>
+                </div>
+
+                <button id="openJobModal" class="primary-btn">
+                    + New Job
+                </button>
+            </div>
+
+
+            <!-- QUEUE SUMMARY -->
+            <div class="queue-summary">
+
+                <div class="queue-card">
+                    <span>Pending Jobs</span>
+                    <h2 id="queuePending">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Running Jobs</span>
+                    <h2 id="queueRunning">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Completed Jobs</span>
+                    <h2 id="queueCompleted">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Failed Jobs</span>
+                    <h2 id="queueFailed">0</h2>
+                </div>
+
+            </div>
+
+
+            <!-- QUEUE TOOLBAR -->
+            <div class="queue-toolbar">
+
+                <input
+                    type="text"
+                    id="jobSearch"
+                    placeholder="Search by Job ID..."
+                >
+
+                <select id="statusFilter">
+                    <option value="ALL">All statuses</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="RUNNING">Running</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="FAILED">Failed</option>
+                    <option value="QUARANTINED">Quarantined</option>
+                </select>
+
+                <select id="algorithmSelect">
+                    <option value="FCFS">FCFS (First-Come First-Served)</option>
+                    <option value="SJF">SJF (Shortest Job First)</option>
+                    <option value="PRIORITY">Priority Scheduling</option>
+                    <option value="ROUND_ROBIN">Round Robin</option>
+                </select>
+
+                <button id="runSchedulerBtn" class="primary-btn" style="padding: 8px 16px;">
+                    ▶ Run Scheduler
+                </button>
+
+                <button id="goToCompareBtn" class="secondary-btn" style="padding: 8px 16px;">
+                    📊 Compare Algorithms
+                </button>
+
+                <button id="refreshQueue" class="secondary-btn">
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+
+            <!-- QUEUE TABLE -->
+            <div class="queue-table-container">
+                <table class="jobs-table">
+
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Command</th>
+                            <th>Arrival</th>
+                            <th>Burst</th>
+                            <th>Priority</th>
+                            <th>Algorithm</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="queueTableBody">
+                        <tr>
+                            <td colspan="7">Loading jobs...</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- WORKERS PAGE -->
+        <section id="workersPage" class="page-section">
+
+            <div class="page-header">
+                <div>
+                    <h1>Workers</h1>
+                    <p>Monitor Docker worker activity.</p>
+                </div>
+            </div>
+
+            <div class="queue-summary">
+                <div class="queue-card">
+                    <span>Total Workers</span>
+                    <h2 id="workerTotal">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Busy</span>
+                    <h2 id="workerBusy">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Idle</span>
+                    <h2 id="workerIdle">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Offline</span>
+                    <h2 id="workerOffline">0</h2>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Worker Status</h3>
+                        <p>Live worker information</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Worker ID</th>
+                                <th>Status</th>
+                                <th>Assigned Job</th>
+                                <th>Last Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workersTable">
+                            <tr>
+                                <td colspan="4">Worker monitoring not implemented yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- EXECUTION HISTORY PAGE -->
+        <section id="historyPage" class="page-section">
+
+            <div class="page-header">
+                <div>
+                    <h1>Execution History</h1>
+                    <p>Review job execution records and output.</p>
+                </div>
+            </div>
+
+            <div class="queue-toolbar">
+                <input
+                    type="text"
+                    id="historySearch"
+                    placeholder="Search Job ID..."
+                >
+
+                <select id="historyStatusFilter">
+                    <option value="ALL">All statuses</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="FAILED">Failed</option>
+                </select>
+
+                <button id="refreshHistory" class="secondary-btn">
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="panel">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Worker</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Completed</th>
+                                <th>Duration</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            <tr>
+                                <td colspan="7">History loading not implemented yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- SECURITY CENTER PAGE -->
+        <section id="securityPage" class="page-section">
+
+            <div class="page-header">
+                <div>
+                    <h1>Security Center</h1>
+                    <p>Monitor security events and quarantined jobs.</p>
+                </div>
+            </div>
+
+            <div class="queue-summary">
+                <div class="queue-card">
+                    <span>Quarantined Jobs</span>
+                    <h2 id="securityQuarantined">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Failed Jobs</span>
+                    <h2 id="securityFailed">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Security Events</span>
+                    <h2 id="securityEvents">0</h2>
+                </div>
+
+                <div class="queue-card">
+                    <span>Audit Records</span>
+                    <h2 id="auditRecords">0</h2>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Security Event Log</h3>
+                        <p>Recorded system security events</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event ID</th>
+                                <th>Job ID</th>
+                                <th>Event Type</th>
+                                <th>Message</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="securityTable">
+                            <tr>
+                                <td colspan="5">Security monitoring not implemented yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ALGORITHM COMPARISON PAGE -->
+        <section id="comparisonPage" class="page-section">
+
+            <div class="page-header">
+                <div>
+                    <h1>Algorithm Comparison</h1>
+                    <p>Comparative performance analysis of CPU scheduling algorithms across processes.</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="runComparisonBtn" class="primary-btn" style="padding: 10px 18px;">
+                        ⚡ Run Comparison
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTROLS & CONFIGURATION PANEL -->
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div>
+                        <h3>Simulation & Evaluation Parameters</h3>
+                        <p>Configure dataset scope and Round Robin time quantum</p>
+                    </div>
+                </div>
+
+                <div class="comparison-toolbar">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label for="compareScope" style="display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; font-weight: 500;">Process Dataset Source</label>
+                        <select id="compareScope" style="width: 100%; padding: 8px 12px; background: #0b1120; border: 1px solid #1f2d47; border-radius: 6px; color: #f8fafc; font-size: 13px;">
+                            <option value="pending">Current Pending Queue (Live Database)</option>
+                            <option value="all">All Database Jobs (Recent)</option>
+                            <option value="sample">Standard Benchmark Dataset (4 Processes)</option>
+                            <option value="custom">Custom Process Simulator</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="width: 180px;">
+                        <label for="compareQuantum" style="display: block; margin-bottom: 6px; font-size: 13px; color: #94a3b8; font-weight: 500;">RR Time Quantum (s)</label>
+                        <input type="number" id="compareQuantum" value="2.0" min="0.5" max="20" step="0.5" style="width: 100%; padding: 8px 12px; background: #0b1120; border: 1px solid #1f2d47; border-radius: 6px; color: #f8fafc; font-size: 13px;">
+                    </div>
+
+                    <div style="align-self: flex-end;">
+                        <button id="refreshCompareBtn" class="secondary-btn" style="padding: 9px 16px;">
+                            ↻ Recalculate
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CUSTOM PROCESSES INPUT CONTAINER -->
+                <div id="customProcessesContainer" class="hidden" style="margin-top: 16px; border-top: 1px solid #1e293b; padding-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 13px; font-weight: 600; color: #f8fafc;">Custom Process Set</span>
+                        <button id="addCustomProcessRowBtn" type="button" class="secondary-btn" style="padding: 4px 10px; font-size: 12px;">+ Add Process</button>
+                    </div>
+                    <table class="jobs-table" style="font-size: 13px;">
+                        <thead>
+                            <tr>
+                                <th>Process ID</th>
+                                <th>Arrival Time (s)</th>
+                                <th>Burst Time (s)</th>
+                                <th>Priority (1=High)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customProcessesTbody">
+                            <!-- Populated with rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RECOMMENDATION BANNER -->
+            <div id="comparisonRecommendationBanner" class="recommendation-banner">
+                <div class="recommendation-badge">🏆 RECOMMENDED ALGORITHM</div>
+                <div id="recommendationText" class="recommendation-title">Analyzing algorithms...</div>
+                <div id="recommendationSub" class="recommendation-detail"></div>
+            </div>
+
+            <!-- OVERALL ALGORITHMS SUMMARY TABLE (RUBRIC REQUIREMENT) -->
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div>
+                        <h3>Algorithm Performance Comparison</h3>
+                        <p>Measured results: average waiting & turnaround times per algorithm on identical sample jobs</p>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="jobs-table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Avg Waiting Time</th>
+                                <th>Avg Turnaround Time</th>
+                                <th>Avg Response Time</th>
+                                <th>Throughput</th>
+                                <th>CPU Utilization</th>
+                                <th>Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody id="algoComparisonTableBody">
+                            <tr><td colspan="7" style="text-align: center; color: #64748b;">Loading algorithm comparison...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GANTT TIMELINE VISUALIZATION -->
+            <div class="panel" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <div>
+                        <h3>Visual CPU Scheduling Timeline (Gantt Chart)</h3>
+                        <p>Process execution order and time slicing across algorithms</p>
+                    </div>
+                </div>
+                <div id="ganttChartsContainer" class="gantt-wrapper">
+                    <!-- Dynamic Gantt bars for FCFS, SJF, RR, Priority -->
+                </div>
+            </div>
+
+            <!-- PROCESS-BY-PROCESS COMPARISON TABLE ("ALONG PROCESSES") -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Per-Process Performance Matrix ("Along Processes")</h3>
+                        <p>Detailed breakdown showing how each individual process performs under each scheduling algorithm</p>
+                    </div>
+                </div>
+
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="jobs-table" id="processComparisonTable">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="vertical-align: middle;">Process ID</th>
+                                <th rowspan="2" style="vertical-align: middle;">Arrival (s)</th>
+                                <th rowspan="2" style="vertical-align: middle;">Burst (s)</th>
+                                <th rowspan="2" style="vertical-align: middle;">Priority</th>
+                                <th colspan="4" style="text-align: center; border-left: 2px solid #334155; border-right: 2px solid #334155;">Waiting Time (s)</th>
+                                <th colspan="4" style="text-align: center; border-right: 2px solid #334155;">Turnaround Time (s)</th>
+                                <th colspan="4" style="text-align: center;">Execution Order</th>
+                            </tr>
+                            <tr style="font-size: 11px; text-transform: uppercase;">
+                                <th style="border-left: 2px solid #334155;">FCFS</th><th>SJF</th><th>RR</th><th style="border-right: 2px solid #334155;">PRIO</th>
+                                <th>FCFS</th><th>SJF</th><th>RR</th><th style="border-right: 2px solid #334155;">PRIO</th>
+                                <th>FCFS</th><th>SJF</th><th>RR</th><th>PRIO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="processComparisonTableBody">
+                            <tr><td colspan="16" style="text-align: center; color: #64748b;">Loading process metrics...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+
+<!-- NEW JOB MODAL -->
+<div id="jobModal" class="modal hidden">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <div>
+                <h2>Submit New Job</h2>
+                <p>Configure a job for the scheduler.</p>
+            </div>
+
+            <button id="closeJobModal" class="close-btn" type="button">
+                &times;
+            </button>
+        </div>
+
+        <form id="jobForm">
+
+            <label for="jobId">Job ID</label>
+            <input
+                type="text"
+                id="jobId"
+                placeholder="e.g. JOB005"
+                required
+            >
+
+            <label for="jobCommand">Python Code</label>
+            <textarea
+                id="jobCommand"
+                rows="5"
+                placeholder="print('Hello from JobSentinel')"
+                required
+            ></textarea>
+
+            <label for="burstTime">Burst Time</label>
+            <input
+                type="number"
+                id="burstTime"
+                min="1"
+                required
+            >
+
+            <label for="priority">Priority</label>
+            <input
+                type="number"
+                id="priority"
+                min="1"
+                value="1"
+                required
+            >
+
+            <label for="jobAlgorithm">Scheduling Algorithm</label>
+            <select id="jobAlgorithm">
+                <option value="FCFS">FCFS</option>
+                <option value="SJF">SJF</option>
+                <option value="PRIORITY">Priority</option>
+                <option value="ROUND_ROBIN">Round Robin</option>
+            </select>
+
+            <button type="submit" class="primary-btn">
+                Submit Job
+            </button>
+
+        </form>
+    </div>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
