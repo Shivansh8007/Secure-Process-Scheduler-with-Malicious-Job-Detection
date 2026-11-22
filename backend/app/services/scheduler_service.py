@@ -86,7 +86,11 @@ def schedule_pending_jobs(
     records execution order & metrics, updates job status to SCHEDULED,
     and optionally executes jobs through Member 3 worker.
     """
-    stmt = select(Job).where(Job.status == JobStatus.PENDING.value)
+    stmt = select(Job).where(Job.status.in_([
+        JobStatus.PENDING.value,
+        JobStatus.QUEUED.value,
+        JobStatus.SCHEDULED.value
+    ]))
     if request.job_ids:
         requested_ids = [str(jid) for jid in request.job_ids]
         stmt = stmt.where(Job.job_id.in_(requested_ids))
@@ -192,20 +196,52 @@ def schedule_pending_jobs(
             start_job_execution(db, job.job_id, worker_id=worker_id)
 
             # Step B: Worker executes process
+            import json as _json
+            job_lang = getattr(job, "programming_language", None) or "python"
+            job_ep = getattr(job, "entry_point", None)
+            exec_cfg = None
+            if getattr(job, "execution_config", None):
+                try:
+                    exec_cfg = _json.loads(job.execution_config) if isinstance(job.execution_config, str) else job.execution_config
+                except Exception:
+                    exec_cfg = None
             run_outcome = worker.run_job(
                 worker_id=worker_id,
                 job_id=job.job_id,
-                task=job.command
+                task=job.command,
+                programming_language=job_lang,
+                entry_point=job_ep,
+                source_path=job.source_path,
+                execution_config=exec_cfg,
+                timeout_seconds=int(getattr(job, "timeout_seconds", None) or 120),
+                cpu_limit=float(getattr(job, "cpu_limit", None) or 1.0),
+                memory_limit_mb=int(getattr(job, "memory_limit_mb", None) or 512),
             )
 
-            # Step C: Record result atomically (COMPLETED / FAILED)
-            status_enum = JobStatus.COMPLETED if run_outcome.get("status") == "COMPLETED" else JobStatus.FAILED
+            # Step C: Record result atomically (COMPLETED / FAILED / BLOCKED / TERMINATED)
+            raw_st = str(run_outcome.get("status", "FAILED")).upper()
+            st_map = {
+                "COMPLETED": JobStatus.COMPLETED,
+                "FAILED": JobStatus.FAILED,
+                "BLOCKED": JobStatus.BLOCKED,
+                "TERMINATED": JobStatus.TERMINATED,
+            }
+            status_enum = st_map.get(raw_st, JobStatus.FAILED)
+            res_metrics = run_outcome.get("resource_metrics")
             result_req = WorkerResultRequest(
                 worker_id=worker_id,
                 status=status_enum,
                 output=run_outcome.get("output", ""),
-                error_message=run_outcome.get("error") or None,
-                execution_time=run_outcome.get("execution_time")
+                error_message=run_outcome.get("error") or run_outcome.get("error_message") or None,
+                execution_time=run_outcome.get("execution_time") or run_outcome.get("execution_duration"),
+                exit_code=run_outcome.get("exit_code", 0 if status_enum == JobStatus.COMPLETED else 1),
+                stdout=run_outcome.get("stdout", ""),
+                stderr=run_outcome.get("stderr", ""),
+                build_logs=run_outcome.get("build_logs"),
+                resource_usage=_json.dumps(res_metrics) if isinstance(res_metrics, dict) else None,
+                resource_metrics=res_metrics if isinstance(res_metrics, dict) else None,
+                service_statuses=run_outcome.get("service_statuses"),
+                security_scan_results=run_outcome.get("security_scan_results"),
             )
             worker_resp = record_job_execution_result(db, job.job_id, result_req)
             executed_results.append(run_outcome)
